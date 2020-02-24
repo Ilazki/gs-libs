@@ -1,4 +1,4 @@
-//#open String.src
+//#open String.gsc
 
 Params = {}
 
