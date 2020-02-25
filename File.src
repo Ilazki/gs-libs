@@ -1,4 +1,4 @@
-//#open Error.gsc
+//#open Error.src
 
 File = {}
 

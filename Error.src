@@ -1,4 +1,4 @@
-//#open Text.gsc
+//#open Text.src
 
 // Standard error and warning dumps
 Error = {}
