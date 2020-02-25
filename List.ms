@@ -2,6 +2,8 @@
 // LIST UTILITIES
 ////////////////////
 
+// TODO: List.copy, List.map_mutate
+
 List = { }
 
 // Apply function (f) to each element of list (l), returning a new list with

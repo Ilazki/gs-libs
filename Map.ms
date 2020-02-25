@@ -2,6 +2,8 @@
 // MAP UTILITIES
 ///////////////////
 
+// TODO:  Map.copy, Map.map_mutate
+
 Map = { }
 
 // Apply function (f) to each element of map (m), returning a new map with
