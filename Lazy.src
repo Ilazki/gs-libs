@@ -1,0 +1,134 @@
+//////////////////////////////////
+// LAZY SEQUENCES (GREYSCRIPT VER)
+//////////////////////////////////
+
+// Lazily evaluated sequences.  Execution of an element is deferred until
+// that element is accessed, and can either be stand-alone or depend on
+// the value of the previous element, allowing the creation of infinite
+// sequences of data.  Works by taking a supplied single-argument function
+// that either ignores its argument or uses it to return the next value
+// in the sequence.
+// 
+// In order to work around a bug with Grey Hack's MiniScript fork, this
+// version uses objects instead of closures to operate.
+// 
+// Examples:
+// 
+// Infinite sequence of die rolls.
+//    // Since a single function argument is necessary but ignored,
+//    // underscore is used by convention.
+//    die_roll = function (_)
+//      return floor(1 + rnd*6)
+//    end function
+//    die_rolls = new Lazy
+//    die_rolls.init(@die_roll)
+//    print ("Rolling die :" + die_rolls.take(10))
+//    print ("Rolling more:" + die_rolls.take(10))
+// 
+// Infinite sequence of positive integers
+//    inc = function (n)
+//      return n + 1
+//    end function
+//    numbers = new Lazy
+//    numbers.init(@inc,0)
+//    print (numbers.take(5)) // 1,2,3,4,5
+//    print (numbers.take(5)) // 6,7,8,9,10
+// 
+// Get the 10th element of a lazy sequence (fast!)
+//    numbers = new Lazy
+//    numbers.init(@inc,0)
+//    print (numbers.nth(10))
+// 
+// Get the 1,000,000th element of a lazy sequence (slow!)
+//    numbers = new Lazy
+//    numbers.init(@inc,0)
+//    print (numbers.nth(1000000))
+
+Lazy = { }
+
+// Get the next value from a lazy sequence.  Created by init and only usable
+// after it has been called.
+Lazy.next = null
+
+// Create a lazy sequence from a supplied function.
+// (body) -> function that MUST accept a single argument and return a value.
+//          However, the body function MAY ignore its argument if desired.
+// (init) -> initial value to be passed to (body) to start the sequence.
+Lazy.init = function (body, init)
+  self._fun = @body
+  self._val = init
+  self.next = function ()
+    result = self._fun(self._val)
+    return [result,self.init(@self._fun,result)]
+  end function
+end function
+
+// Take (n) elements from lazy seq.  Be aware that if a sequence is saved
+// to a name, future invocations of take will start where previous ones
+// ended.
+Lazy.take = function (n)
+list = []
+  realized = null
+  i = 0
+  // Can't use range() for arbitrarily large values, which defeats the
+  // purpose of using a lazy sequence.
+  while i <= n
+    if i == n then return list; end if
+    realized = self.next
+    if [] == realized[0] then return list; end if
+    list.push(realized[0])
+    i = i + 1
+  end while
+end function
+
+// Return the (n)th element from lazy seq.  Like take, be aware that
+// nth will begin counting from where previous take or nth invocations
+// stopped.
+Lazy.nth = function (n)
+  i = 1
+  // while required because range() won't work for very large values.
+  while i <= n
+    realized = self.next
+    if [] == realized[0] then return null; end if
+    if i == n then return realized[0]; end if
+    i = i + 1
+  end while
+end function
+
+// infinite sequence of (v).  Helper for a common lazy sequence:
+// an infinite list of a single item.  Lazy.repeatedly creates and
+// returns a Lazy object for use with take and nth.
+// 
+// Example:
+// 
+// nines = Lazy.repeatedly("9")
+// print(nines.take(10))
+Lazy.repeatedly = function (v)
+  obj = new Lazy
+  val = function (v)
+    return v
+  end function
+  obj.init(@val,v)
+  return obj
+end function
+
+// infinite sequence of elements in (l).  Like repeatedly, this is a
+// helper for a common use case and returns a Lazy object already
+// prepared for use with take and nth.
+// 
+// Example:
+// 
+// cycle = Lazy.cycle([1,2,3,2])
+// print (cycle.take(13))
+Lazy.cycle = function (l)
+  obj = new Lazy
+  obj._list = l
+  obj._pos  = -1
+  next = function (_)
+    self._pos = self._pos + 1
+    if self._pos == self._list.len then self._pos = 0; end if
+    return self._list[self._pos]
+  end function
+  obj.init(@next,obj._pos)
+  return obj
+end function

@@ -1,6 +1,8 @@
 // NOTE:  These functions DO NOT WORK in Grey Hack currently due to an
 // issue with how it's handling lexical scoping.  They DO work as expected
 // in MiniScript, though, despite its own interesting scoping issues.
+//
+// Use Lazy.src instead for a Grey Hack compatible version.
 
 ////////////////////
 // LAZY SEQUENCES
