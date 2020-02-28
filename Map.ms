@@ -74,9 +74,5 @@ end function
 
 // Returns true if predicate (p) exists in map (m)
 Map.exists = function (p, m)
-  if m.indexOf(p) then
-    return true
-  else 
-    return false
-  end if
+  return m.hasIndex(p)
 end function
